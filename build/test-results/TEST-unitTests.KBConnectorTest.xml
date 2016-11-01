@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTests.KBConnectorTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2016-09-28T03:43:38" hostname="victor-pc" time="1.922">
+  <properties/>
+  <testcase name="testMethodDeclaration" classname="unitTests.KBConnectorTest" time="1.367"/>
+  <testcase name="testObjectMethodInvocation" classname="unitTests.KBConnectorTest" time="0.081"/>
+  <testcase name="testMethodInvocation" classname="unitTests.KBConnectorTest" time="0.067"/>
+  <testcase name="testObjectInstantiation" classname="unitTests.KBConnectorTest" time="0.105"/>
+  <testcase name="testClassDeclaration" classname="unitTests.KBConnectorTest" time="0.064"/>
+  <testcase name="testObjectVariableAssignation" classname="unitTests.KBConnectorTest" time="0.1"/>
+  <testcase name="testPackageDeclaration" classname="unitTests.KBConnectorTest" time="0.131"/>
+  <system-out><![CDATA[methodDeclaration
+methodDeclaration
+methodDeclaration
+methodDeclaration
+objectMethodInvocation
+objectMethodInvocation
+objectMethodInvocation
+methodInvocation
+methodInvocation
+methodInvocation
+objectInstantiation
+objectInstantiation
+objectInstantiation
+classDeclaration
+classDeclaration
+classDeclaration
+classDeclaration
+objectVariableAssignation
+packageDeclaration
+packageDeclaration
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
