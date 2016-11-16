@@ -17,8 +17,6 @@ import javax.swing.JFileChooser;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import model.Line;
 import model.OFGelement;
@@ -33,13 +31,14 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author victor del rio
  */
 public class MainWindow extends javax.swing.JFrame implements MouseListener {
+    private static final String folderWithOutSrc = "The selected folder does not match to a proyect.";
+    private static final String invalidDirectory = "The selected path is not a valid directory.";
+    private static final String invalidSintaxStructure = "Please select a valid structure.";
     private Coordinator coordinator;
     private RSyntaxTextArea textArea;
     private RTextScrollPane textScrollPane;
     private JPanel panel;
     private File currentFile;
-
-
 
     /**
      * Creates new form MainWindow
@@ -47,14 +46,18 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     public MainWindow() {
         initComponents();
         add(initTextArea());
-        setTitle("TesisProgramaFinal");
+        setTitle("TesisFinalProgram");
         setResizable(false);
         setLocationRelativeTo(null);
-        jTree1.setRootVisible(false);
+        jTree.setRootVisible(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
     }
     
+    /**
+     * Initializes the RSyntaxArea and enters it into a JPanel.
+     * @return 
+     */
     public JPanel initTextArea(){
         panel = new JPanel(new BorderLayout());
         panel.setBounds(310, 12,686, 555);
@@ -68,16 +71,6 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         return panel;
     }
     
-    public void defineJtreeModel(File fileRoot) {
-        //File fileExample = new File("");
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(fileRoot);
-        DefaultTreeModel model = new DefaultTreeModel(root);
-        File[] subItems = fileRoot.listFiles();
-            for (File file : subItems) {
-                root.add(new DefaultMutableTreeNode(file));
-            }
-        jTree1.setModel(model);
-    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -88,7 +81,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTree1 = new javax.swing.JTree();
+        jTree = new javax.swing.JTree();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -97,13 +90,13 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
-        jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        jTree1.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+        jTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        jTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                jTree1ValueChanged(evt);
+                jTreeValueChanged(evt);
             }
         });
-        jScrollPane1.setViewportView(jTree1);
+        jScrollPane1.setViewportView(jTree);
 
         jMenu1.setText("File");
 
@@ -150,7 +143,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    private void jTree1ValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTree1ValueChanged
+    private void jTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTreeValueChanged
         String node = evt.getNewLeadSelectionPath().getLastPathComponent().toString();
         File file = new File(node);
         String ext = FilenameUtils.getExtension(node);
@@ -162,17 +155,50 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             }
         }
         
-    }//GEN-LAST:event_jTree1ValueChanged
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTree jTree1;
-    // End of variables declaration//GEN-END:variables
+    }//GEN-LAST:event_jTreeValueChanged
+    
+    /**
+     * Changes the path of the open folder to a local variable and makes a call to "defineTreeModel()"
+     * @throws FileNotFoundException 
+     */
+    public void openFolder() throws FileNotFoundException{
+        JFileChooser file = new JFileChooser();
+        file.setAcceptAllFileFilterUsed(false);
+        file.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        file.showOpenDialog(this);
+        File path = file.getSelectedFile();
+        if(path != null && path.exists() && path.isDirectory()){
+            defineTreeModel(path);
+            currentFile = path;
+        } else {
+            JOptionPane.showMessageDialog(null, "Por favor seleccione algun proyecto");
+        }
+    }
+    
+    /**
+     * Takes the format of the tree model from the path and implements it to the jtree
+     * @param path 
+     */
+    public void defineTreeModel(File path){
+        boolean validFolder = false;
+        String[] names = path.list();
+        for(String name : names){
+            if("src".equals(name)){
+                validFolder = true;
+            } 
+        }
+        if(validFolder){
+            if (new File(path.getAbsolutePath() + "\\" + "src").isDirectory()){
+                TreeModel model = new FileTreeModel(path);
+                jTree.setModel(model);
+                jTree.setRootVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(null, invalidDirectory);
+            }
+        } else {
+                JOptionPane.showMessageDialog(null, folderWithOutSrc);
+        }    
+    }
 
     public void mouseClicked(MouseEvent e) {
             RSyntaxTextArea textArea = ((RSyntaxTextArea)e.getComponent());
@@ -189,7 +215,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "Por favor elija una estructura valida");
+                JOptionPane.showMessageDialog(null, invalidSintaxStructure);
             }
 //              Obtener el texto y mostrarlo en el jtextpanel
 //              jTextPane1.setText(line.getType());
@@ -214,41 +240,12 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     public void setCoordinator(Coordinator coordinator) {
         this.coordinator = coordinator;
     }
-    
-    public void openFolder() throws FileNotFoundException{
-        JFileChooser file = new JFileChooser();
-        file.setAcceptAllFileFilterUsed(false);
-        file.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        file.showOpenDialog(this);
-        File path = file.getSelectedFile();
-        if(path != null && path.exists() && path.isDirectory()){
-            defineTreeModel(path);
-            currentFile = path;
-        } else {
-            JOptionPane.showMessageDialog(null, "Por favor seleccione algun proyecto");
-            
-        }
-    }
-    
-    public void defineTreeModel(File path){
-        boolean validFolder = false;
-        String[] names = path.list();
-        for(String name : names){
-            if("src".equals(name)){
-                validFolder = true;
-            } 
-        }
-        if(validFolder){
-            if (new File(path.getAbsolutePath() + "\\" + "src").isDirectory()){
-                TreeModel model = new FileTreeModel(path);
-                jTree1.setModel(model);
-                jTree1.setRootVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(null, "La carpeta seleccionada no corresponde a un proyecto");
-            }
-        } else {
-                JOptionPane.showMessageDialog(null, "La carpeta seleccionada no corresponde a un proyecto");
-        }    
-    }
-
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTree jTree;
+    // End of variables declaration//GEN-END:variables
 }
