@@ -7,16 +7,23 @@ package view;
 
 import controller.Coordinator;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.UIManager;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import model.Line;
 import model.OFGelement;
@@ -34,6 +41,8 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     private static final String folderWithOutSrc = "The selected folder does not match to a proyect.";
     private static final String invalidDirectory = "The selected path is not a valid directory.";
     private static final String invalidSintaxStructure = "Please select a valid structure.";
+    private static final String selectAJavaFile = "Please select a java file.";
+    private static final String selectAProject = "Please select a project.";
     private Coordinator coordinator;
     private RSyntaxTextArea textArea;
     private RTextScrollPane textScrollPane;
@@ -50,10 +59,24 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         setResizable(false);
         setLocationRelativeTo(null);
         jTree.setRootVisible(false);
+        jTree.putClientProperty("JTree.lineStyle", "None");
+        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+        renderer.setLeafIcon(createImageIcon("images/JavaIcon.png"));
+        jTree.setCellRenderer(renderer);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
     }
     
+    /** Returns an ImageIcon, or null if the path was invalid. */
+    private ImageIcon createImageIcon(String path) {
+        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
+        if (imgURL != null) {
+            return new ImageIcon(imgURL);
+        } else {
+            System.err.println("Couldn't find file: " + path);
+            return null;
+        }
+    }
     /**
      * Initializes the RSyntaxArea and enters it into a JPanel.
      * @return 
@@ -144,17 +167,21 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTreeValueChanged
-        String node = evt.getNewLeadSelectionPath().getLastPathComponent().toString();
-        File file = new File(node);
-        String ext = FilenameUtils.getExtension(node);
-        if(!file.isDirectory() && "java".equals(ext)){
-            try {
-                textArea.setText(coordinator.readFileCode(file));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        Object lastPathComponent = evt.getNewLeadSelectionPath().getLastPathComponent();
+        if(lastPathComponent instanceof MyFile){
+            MyFile myFile = (MyFile) lastPathComponent;
+            File file = myFile.getFile();
+            String ext = FilenameUtils.getExtension(file.getAbsolutePath());
+            if(!file.isDirectory() && "java".equals(ext)){
+                try {
+                    textArea.setText(coordinator.readFileCode(file));
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, selectAJavaFile);
             }
-        }
-        
+        } 
     }//GEN-LAST:event_jTreeValueChanged
     
     /**
@@ -171,25 +198,26 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             defineTreeModel(path);
             currentFile = path;
         } else {
-            JOptionPane.showMessageDialog(null, "Por favor seleccione algun proyecto");
+            JOptionPane.showMessageDialog(null, selectAProject);
         }
     }
     
     /**
      * Takes the format of the tree model from the path and implements it to the jtree
-     * @param path 
+     * @param file 
      */
-    public void defineTreeModel(File path){
+    public void defineTreeModel(File file){
         boolean validFolder = false;
-        String[] names = path.list();
+        String[] names = file.list();
         for(String name : names){
             if("src".equals(name)){
                 validFolder = true;
             } 
         }
         if(validFolder){
-            if (new File(path.getAbsolutePath() + "\\" + "src").isDirectory()){
-                TreeModel model = new FileTreeModel(path);
+            if (new File(file.getAbsolutePath() + "\\" + "src").isDirectory()){
+                MyFile myFile = new MyFile(file);
+                TreeModel model = new FileTreeModel(myFile);
                 jTree.setModel(model);
                 jTree.setRootVisible(true);
             } else {
@@ -201,10 +229,10 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     }
 
     public void mouseClicked(MouseEvent e) {
-            RSyntaxTextArea textArea = ((RSyntaxTextArea)e.getComponent());
-            String[] text = textArea.getText().split("\n");
-            Line line = coordinator.analyzeLineOfCode(text[textArea.getCaretLineNumber()]);
-            line.setIndex(textArea.getCaretLineNumber());
+            RSyntaxTextArea area = ((RSyntaxTextArea)e.getComponent());
+            String[] text = area.getText().split("\n");
+            Line line = coordinator.analyzeLineOfCode(text[area.getCaretLineNumber()]);
+            line.setIndex(area.getCaretLineNumber());
             if(line.isState() && line.getType().equals("objectMethodInvocation")){
                 try {
                     OFGView ofgView= new OFGView();
@@ -232,7 +260,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
 
     public void mouseExited(MouseEvent e) {
     }
-
+    
     public Coordinator getCoordinator() {
         return coordinator;
     }

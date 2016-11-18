@@ -15,10 +15,14 @@ import org.netbeans.api.visual.widget.Widget;
  * @author victor
  */
 public class OFGView {
-    OFGelement ofg;
-    String rootId;
-    String lastId;
-    boolean firstElement;
+    private OFGelement ofg;
+    private String rootId;
+    private String lastId;
+    boolean firstElement;// Indicates if a OFG elemet is a first element
+    
+    /**
+     * Initializes the graph scene creating all the nodes and edges.
+     */
     public void initGraph(){
         OFGraphScene scene = new OFGraphScene ();
         int rootX = 100;
@@ -83,6 +87,32 @@ public class OFGView {
     public void setOfg(OFGelement ofg) {
         this.ofg = ofg;
     }
+
+    public String getRootId() {
+        return rootId;
+    }
+
+    public void setRootId(String rootId) {
+        this.rootId = rootId;
+    }
+
+    public String getLastId() {
+        return lastId;
+    }
+
+    public void setLastId(String lastId) {
+        this.lastId = lastId;
+    }
+
+    public boolean isFirstElement() {
+        return firstElement;
+    }
+
+    public void setFirstElement(boolean firstElement) {
+        this.firstElement = firstElement;
+    }
+    
+    
     
     /**
      * Ejemplos que se pueden usar:
