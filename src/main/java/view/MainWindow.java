@@ -7,30 +7,32 @@ package view;
 
 import controller.Coordinator;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URL;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTree;
-import javax.swing.UIManager;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import model.Line;
 import model.OFGelement;
+import model.XmlConversor;
 import org.apache.commons.io.FilenameUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.openide.util.Exceptions;
 
 /**
  * This jframeForm is the first view of the UI
@@ -47,7 +49,8 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     private RSyntaxTextArea textArea;
     private RTextScrollPane textScrollPane;
     private JPanel panel;
-    private File currentFile;
+    private File projectFolder;
+    private File lastSelectedFilePath;
 
     /**
      * Creates new form MainWindow
@@ -63,11 +66,23 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
         renderer.setLeafIcon(createImageIcon("images/JavaIcon.png"));
         jTree.setCellRenderer(renderer);
+        jTree.addTreeSelectionListener(new TreeSelectionListener() {  
+        public void valueChanged(TreeSelectionEvent e) {  
+           TreePath treePath = e.getNewLeadSelectionPath();  
+           if (treePath != null) {
+              lastSelectedFilePath = ((MyFile)treePath.getLastPathComponent()).getFile();
+           }
+        }  
+        });
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
     }
     
-    /** Returns an ImageIcon, or null if the path was invalid. */
+    /**
+     * Returns an ImageIcon, or null if the path was invalid. 
+     * @param path
+     * @return 
+     */
     private ImageIcon createImageIcon(String path) {
         java.net.URL imgURL = getClass().getClassLoader().getResource(path);
         if (imgURL != null) {
@@ -196,7 +211,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         File path = file.getSelectedFile();
         if(path != null && path.exists() && path.isDirectory()){
             defineTreeModel(path);
-            currentFile = path;
+            projectFolder = path;
         } else {
             JOptionPane.showMessageDialog(null, selectAProject);
         }
@@ -236,10 +251,13 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             if(line.isState() && line.getType().equals("objectMethodInvocation")){
                 try {
                     OFGView ofgView= new OFGView();
-                    OFGelement ofg = coordinator.analyzeAllSourceCode(currentFile, line);
+                    OFGelement ofg = coordinator.analyzeAllSourceCode( line, lastSelectedFilePath);
+                    XmlConversor.createXmlDocument(ofg);
                     ofgView.setOfg(ofg);
                     ofgView.initGraph();
                 } catch (FileNotFoundException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
@@ -248,6 +266,8 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
 //              Obtener el texto y mostrarlo en el jtextpanel
 //              jTextPane1.setText(line.getType());
     }
+    
+    
 
     public void mousePressed(MouseEvent e) {
     }

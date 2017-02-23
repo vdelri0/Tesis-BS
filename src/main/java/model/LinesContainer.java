@@ -46,11 +46,11 @@ public class LinesContainer {
         this.methodsLines = methodsLines;
     }
 
-    public ArrayList<Line> getObjectInstatiationLines() {
+    public ArrayList<Line> getObjectInstantiationLines() {
         return objectInstatiationLines;
     }
 
-    public void setObjectInstatiationLines(ArrayList<Line> objectInstatiationLines) {
+    public void setObjectInstantiationLines(ArrayList<Line> objectInstatiationLines) {
         this.objectInstatiationLines = objectInstatiationLines;
     }
 

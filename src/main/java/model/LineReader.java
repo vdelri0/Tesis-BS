@@ -14,6 +14,7 @@ public class LineReader {
     private String sourceCode;//It is the source code that can be readed
     private Scanner scanner;//It is the object that helps to read the source code
     private Coordinator coordinator;
+    private KBConnector kbconnector;
 
 //    /**
 //     * This method allows to read line by line the source code
@@ -24,6 +25,12 @@ public class LineReader {
 //        lineOfCode = scanner.nextLine();
 //        return lineOfCode;
 //    }
+
+    public LineReader() {
+        kbconnector = new KBConnector();
+    }
+    
+    
     
     /**
      * It allows to read all the File source code
@@ -44,7 +51,7 @@ public class LineReader {
     public Line analyzeLineOfCode(String lineOfCode){
         Line line = new Line();
         line.setLineOfCode(lineOfCode);
-        line = (Line) coordinator.getKbconnector().enterObjectInKnowledgeBase(line);
+        line = (Line) kbconnector.enterObjectInKnowledgeBase(line);
         return line;
     }
 
@@ -62,14 +69,6 @@ public class LineReader {
 
     public void setScanner(Scanner scanner) {
         this.scanner = scanner;
-    }
-
-    public Coordinator getCoordinator() {
-        return coordinator;
-    }
-
-    public void setCoordinator(Coordinator coordinator) {
-        this.coordinator = coordinator;
     }
 
 }

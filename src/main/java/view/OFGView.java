@@ -27,24 +27,27 @@ public class OFGView {
         OFGraphScene scene = new OFGraphScene ();
         int rootX = 100;
         int rootY = 100;
-        int X = 400;
-        int Y = 0;
+        int x = 400;
+        int y = 0;
         firstElement = true;
         Widget root = createOFGelement(ofg, scene);
         defineLocation(root, rootX, rootY);
+        createChildrensInOfg( ofg, rootX, rootY, x, y, scene);
         
-        if(!ofg.getChildren().isEmpty()){
-            for (OFGelement element : ofg.getChildren()) {
-                Widget child = createOFGelement(element, scene);
-                defineLocation(child, rootX + X, Y);
-                createRelation(scene, rootId, "Node:"+element.getLine().getLineOfCode());
-                Y = Y + 100;
-            }
-        }
         SceneSupport.show(scene.createView());
     }
     
-    
+    public void createChildrensInOfg(OFGelement ofgElement,int rootX, int rootY, int x, int y, OFGraphScene scene){
+        if(!ofgElement.getChildren().isEmpty()){
+            for (OFGelement element : ofgElement.getChildren()) {
+                Widget child = createOFGelement(element, scene);
+                defineLocation(child, rootX + x, y);
+                createRelation(scene, rootId, "Node:"+element.getLine().getLineOfCode());
+                y = y + rootY;
+                createChildrensInOfg(element, rootX, rootY, x, y, scene);
+            }
+        }
+    }
     
     public Widget createOFGelement(OFGelement element, OFGraphScene scene){
         String id = "Node:"+element.getLine().getLineOfCode();

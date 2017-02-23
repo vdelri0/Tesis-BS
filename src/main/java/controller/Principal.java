@@ -37,21 +37,16 @@ public class Principal {
         kbconnector = new KBConnector();
         coordinator = new Coordinator();
         
-        /*We define the relations between classes*/
+        /*We define the relations between the view and the model*/
         window.setCoordinator(coordinator);
-        lineReader.setCoordinator(coordinator);
-        projectReader.setCoordinator(coordinator);
-        xmlConversor.setCoordinator(coordinator);
-        kbconnector.setCoordinator(coordinator);
+        
         
         /*we define the relations with the class Coordinator*/
-        coordinator.setMainWindow(window);
         coordinator.setLineReader(lineReader);
         coordinator.setProjectReader(projectReader);
         coordinator.setXmlConversor(xmlConversor);
-        coordinator.setKbconnector(kbconnector);
         
         window.setVisible(true);
-        coordinator.connect();
+
     }
 }

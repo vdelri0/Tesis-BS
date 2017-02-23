@@ -25,6 +25,10 @@ public class KBConnector {
     StatefulKnowledgeSession ksession;
     ExpressionLibrary library;
     Coordinator coordinator;
+
+    public KBConnector() {
+        connect();
+    }
     
     public void connect(){
         

@@ -5,6 +5,7 @@
  */
 package model;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -18,13 +19,18 @@ public class OFGelement {
     private String className;
     private String methodName;
     private ArrayList<OFGelement> children;
+    private LinesContainer linesContainer;
+    private File file;
 
-    public OFGelement(boolean root, Line line, String packageName, String className, String methodName) {
+    public OFGelement(boolean root, Line line, String packageName, String className, String methodName, LinesContainer linesContainer, File file) {
         this.root = root;
         this.line = line;
         this.packageName = packageName;
         this.className = className;
         this.methodName = methodName;
+        this.children = new ArrayList<OFGelement>();
+        this.linesContainer =  linesContainer;
+        this.file = file;
     }
 
     public boolean isRoot() {
@@ -74,4 +80,22 @@ public class OFGelement {
     public void setChildren(ArrayList<OFGelement> children) {
         this.children = children;
     }
+
+    public LinesContainer getLinesContainer() {
+        return linesContainer;
+    }
+
+    public void setLinesContainer(LinesContainer linesContainer) {
+        this.linesContainer = linesContainer;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+    
+    
 }
