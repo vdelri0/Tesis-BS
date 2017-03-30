@@ -48,14 +48,14 @@ public class Coordinator {
     
     /**
      * 
-     * @param currentFile
      * @param root
-     * @param lastFileSelectedPath
+     * @param lastFileSelected
+     * @param projectFile
      * @return
      * @throws FileNotFoundException 
      */
-    public OFGelement analyzeAllSourceCode( Line root, File lastFileSelectedPath) throws FileNotFoundException, IOException {
-       return projectReader.analizeAllSourceCode(root, lastFileSelectedPath);
+    public OFGelement analyzeAllSourceCode( Line root, File lastFileSelected, File projectFile) throws FileNotFoundException, IOException {
+       return projectReader.analizeAllSourceCode(root, lastFileSelected, projectFile);
     }
     
     /**

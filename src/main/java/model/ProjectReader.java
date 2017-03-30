@@ -9,9 +9,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 import static model.ConstantsManager.METHOD_DECLARATION;
 import static model.ConstantsManager.OBJECT_METHOD_INVOCATION;
-import static model.ConstantsManager.PACKAGE_DECLARATION;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -22,8 +23,8 @@ public class ProjectReader {
     private LineReader lineReader = new LineReader();
     ArrayList<File> javaFiles = new ArrayList<File>();
     ArrayList<File> directoryFiles = new ArrayList<File>();
-    ArrayList<JavaFileAnalized> javaFilesAnalized = new ArrayList<JavaFileAnalized>();
-    private boolean methodFound = false; //indica si se encontro el metodo buscando dentro de la misma clase, paquete o en un paquete diferente.
+    CopyOnWriteArrayList<LinesContainer> containersOfAnalized = new CopyOnWriteArrayList<LinesContainer>(); //Contiene todos los archivos desglozados
+    CopyOnWriteArrayList<File> filesAnalized = new CopyOnWriteArrayList<File>();
     
     
     /**
@@ -34,52 +35,54 @@ public class ProjectReader {
      * @return
      * @throws FileNotFoundException 
      */
-    public OFGelement analizeAllSourceCode(Line root, File lastFileSelected) throws FileNotFoundException, IOException{
+    public OFGelement analizeAllSourceCode(Line root, File lastFileSelected, File projectFile) throws FileNotFoundException, IOException{
         String packageName = "";
         File lastFileSelectedParent = lastFileSelected.getParentFile();
         JavaFileAnalized javaFileAnalized = readJavaFile(lastFileSelected); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
-        javaFilesAnalized.add(javaFileAnalized); //Añade el ultimo archivo java analizado a la lista de archivos analizados.
         LinesContainer linesContainer = organizeLinesOfCode(javaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
+        filesAnalized.add(lastFileSelected);
+        linesContainer.setFile(lastFileSelected);
+        containersOfAnalized.add(linesContainer);
         OFGelement ofgRoot = OFGconverter.defineTypeOfOFGElement(linesContainer, root, true, lastFileSelected);//Aqui debemos pasar el objeto a un metodo para determinar que clase estamos buscando y realizar el mismo proceso de nuevo hasta que no halla mas elementos del ofg.
-        return  createOfg(ofgRoot, linesContainer, lastFileSelectedParent, packageName);
+        navigateFolders(projectFile, true);
+        ofgRoot = createOfg(ofgRoot, linesContainer, lastFileSelectedParent, projectFile, packageName);
+        javaFiles.clear();
+        filesAnalized.clear();
+        containersOfAnalized.clear();
+        directoryFiles.clear();
+        return  ofgRoot;
     }
     
     
-    public OFGelement createOfg(OFGelement ofgElement, LinesContainer linesContainer, File file, String packageName) throws FileNotFoundException, IOException{
-    String methodName = OFGconverter.findPattern(ofgElement.getLine().getLineOfCode(),OBJECT_METHOD_INVOCATION, 3);
-        //De aqui en adelante pueden existir 3 casos: 
-        findChildrensInJavaFile(linesContainer, methodName, ofgElement, file);//1. Que el metodo llamado se encuentre dentro de la misma clase.
+    public OFGelement createOfg(OFGelement ofgElement, LinesContainer linesContainer, File lastFileSelected, File projectFile, String packageName) throws FileNotFoundException, IOException{
         
-        if(!methodFound){//2. Que el metodo llamado se encuentre en otra clase dentro del mismo paquete.
-            if(file != null){
-            navigateFolders(file);
-            packageName = OFGconverter.findPattern(linesContainer.getPackageLine().getLineOfCode(), PACKAGE_DECLARATION, 1);
-                if(!javaFiles.isEmpty()){
-                    for (File javaFile : javaFiles) {
-                        JavaFileAnalized auxJavaFileAnalized = readJavaFile(javaFile); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
-                        LinesContainer auxLinesContainer = organizeLinesOfCode(auxJavaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
-                        findChildrensInJavaFile(auxLinesContainer, methodName, ofgElement, javaFile);
+        boolean flag = false;
+//        if("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\draw\\AbstractCompositeFigure.java".equals(lastFileSelected.getAbsolutePath())){
+//            System.err.println("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\draw\\AbstractCompositeFigure.java");
+//        }
+//        System.err.println(lastFileSelected.getAbsolutePath());
+//        System.out.println(ofgElement.getLine().getLineOfCode());
+//        System.err.println(ofgElement.getLine().getType());
+        flag = findChildrensInJavaFile(linesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, lastFileSelected, projectFile);//1. Que el metodo llamado se encuentre dentro de la misma clase.
+        if(!flag){
+            if(!javaFiles.isEmpty()){
+                for(File javaFile: javaFiles){
+                    if(!filesAnalized.contains(javaFile)){
+                    JavaFileAnalized auxJavaFileAnalized = readJavaFile(javaFile); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
+                    LinesContainer auxLinesContainer = organizeLinesOfCode(auxJavaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
+                    auxLinesContainer.setFile(javaFile);
+                    findChildrensInJavaFile(auxLinesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, javaFile, projectFile);
+                    filesAnalized.add(javaFile);
+                    containersOfAnalized.add(auxLinesContainer);
+                    } else {
+                        for(LinesContainer auxLinesContainer: containersOfAnalized){
+                            if(auxLinesContainer.getFile().equals(javaFile)){
+                                findChildrensInJavaFile(auxLinesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, javaFile, projectFile);
+                            }
+                        }
                     }
                 }
-            }
-        } 
-        
-        if(!methodFound){//3. Que el metodo llamado se encuentre en otra clase fuera del paquete de la clase.
-            boolean treeFlag = true;
-            ArrayList<File> newDirectoryFiles; //nuevo array de folders que va a recibir al global.
-            ArrayList<File> replaceDirectoryFiles; //Este se va a usar para el reemplazo en el ciclo.
-            while(treeFlag){
-                newDirectoryFiles = directoryFiles; //pasamos los valores del array global de folders a uno local
-                directoryFiles.clear(); //Borramos los elementos del del array global, ya que fueron usados para el caso 2.
-                if(!newDirectoryFiles.isEmpty()){
-                    for(File directoryFile: newDirectoryFiles){
-                        navigateFolders(directoryFile); //Tomamos las carpetas usadas en el caso 2, pero en vez de usarlas para encontrar archivos, las usamos para encontrar sus carpetas.
-                        replaceDirectoryFiles = directoryFiles;
-                        directoryFiles.clear();
-                        findJavaFiles(packageName, methodName, ofgElement, replaceDirectoryFiles);
-                    }
-                } else { treeFlag = false; }
-            }
+            } 
         }
         
         
@@ -235,66 +238,53 @@ public class ProjectReader {
     /**
      * Busca todos los hijos que se encuentran dentro de un archivo java. (ya desglozado en un LinesContainer)
      * @param linesContainer
-     * @param methodRootName
+     * @param objectMethodInvocation
+     * @param lastFileSelected
+     * @param projectFile
      * @param ofgRoot 
+     * @return  
+     * @throws java.io.IOException 
      */
-    public void findChildrensInJavaFile(LinesContainer linesContainer, String methodRootName, OFGelement ofgRoot, File file) throws IOException{
+    public boolean findChildrensInJavaFile(LinesContainer linesContainer, String objectMethodInvocation, OFGelement ofgRoot, File lastFileSelected, File projectFile) throws IOException{
+        boolean flag = false;
+        boolean childrenFound = false;
+        String methodRootName = OFGconverter.findPattern(objectMethodInvocation,OBJECT_METHOD_INVOCATION, 2);
         for(int i = 0; i < linesContainer.getMethodsLines().size(); i++){ //Buscamos todas las lineas de metodos de la clase.
             Line methodLine = linesContainer.getMethodsLines().get(i);
-            String methodName = OFGconverter.findPattern(methodLine.getLineOfCode(),METHOD_DECLARATION, 4); //Sacamos el nombre del metodo que estamos comparando.
+            String methodName = OFGconverter.findPattern(methodLine.getLineOfCode(),METHOD_DECLARATION, 3); //Sacamos el nombre del metodo que estamos comparando.
             if(methodName.equals(methodRootName)){ //comparamos si coinciden
                 /*Aqui debemos colocar la variable para indicar que se cumplio este caso.*/
                 if(i<linesContainer.getMethodsLines().size()-1){//En caso de que i no sea el ultimo elemento del array
-                    findChildrensBetweenMethods(ofgRoot, linesContainer, methodLine, i, file);
+                    findChildrensBetweenMethods(ofgRoot, linesContainer, methodLine, i, lastFileSelected);
                 } else {//En caso de que i sea el ultimo elemento del array
-                    findChildrensAfterLastMethod(ofgRoot, linesContainer, methodLine, file);
+                    findChildrensAfterLastMethod(ofgRoot, linesContainer, methodLine, lastFileSelected);
                 }
-                methodFound = true;
-            }
-        }
-        if(methodFound){
-            methodFound = false;
-            for(OFGelement ofgElement: ofgRoot.getChildren()){
-                createOfg(ofgElement, linesContainer, file, ofgElement.getPackageName());
-            }
-        }
-    }
-    
-    
-    public void findJavaFiles(String packageName, String methodRootName, OFGelement ofgElement, ArrayList<File> directoryFiles) throws FileNotFoundException, IOException{
-       
-        ArrayList<File> directoryJavaFiles = new ArrayList<File>() ;
-        if(!directoryFiles.isEmpty()){
-            for (File directoryFile : directoryFiles) { //Recorre todos los directorios existentes en la ruta del archivo principal.
-                directoryJavaFiles = new ArrayList<File>();
-                String path = directoryFile.getAbsolutePath();
-                String folderNameDirectoryFile = path.substring(path.lastIndexOf("\\") + 1, path.length());
-                if(folderNameDirectoryFile.equals(packageName)){
-                    /*Version modificada de navigateFolders*/
-                    String[] names = directoryFile.list(); //obtiene todas las carpetas hijo de directoryFile.
-                    for (String name : names) { //recorre cada una de las carpetas hijo.
-                        String ext = FilenameUtils.getExtension(directoryFile.getAbsolutePath() + "\\" + name);
-                        File subDirectoryFile = new File(directoryFile.getAbsolutePath() + "\\" + name);
-                        if(!subDirectoryFile.isDirectory() && "java".equals(ext)){
-                            directoryJavaFiles.add(subDirectoryFile);
+                Iterator<OFGelement> iterator = ofgRoot.getChildren().iterator();
+                while(iterator.hasNext()){
+                    OFGelement ofgElementIterator = iterator.next();
+                    String iteratorLineOfCode = ofgElementIterator.getLine().getLineOfCode();
+                    String iteratorTypeOfLine = ofgElementIterator.getLine().getType();
+                    String iteratorMethodName = ofgElementIterator.getMethodName();
+                    String pattern = OFGconverter.findPattern(iteratorLineOfCode,OBJECT_METHOD_INVOCATION, 2);
+                    if(objectMethodInvocation.equals(iteratorLineOfCode)){
+                        iterator.remove();
+                    } else if(pattern != null && "objectMethodInvocation".equals(iteratorTypeOfLine)){
+                        if(iteratorMethodName.equals(pattern)){
+                            iterator.remove();
                         }
                     }
                 }
+                childrenFound = true;
             }
-            if(!directoryJavaFiles.isEmpty()){
-                for (File directoryJavaFile : directoryJavaFiles) {
-                    JavaFileAnalized directoryJavaFileAnalized = readJavaFile(directoryJavaFile); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
-                    LinesContainer directoryLinesContainer = organizeLinesOfCode(directoryJavaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
-                    findChildrensInJavaFile(directoryLinesContainer, methodRootName, ofgElement, directoryJavaFile);
-                }
-                methodFound = true;
-            } else { 
-                System.out.println("No existen otras clases dentro del paquete para referenciar a los nuevos nodos del ofg.");
-            }
-            
-        } else { 
-            System.out.println("No existen otros paquetes en la ruta del archivo principal.");
+
         }
+        if(!ofgRoot.getChildren().isEmpty() && childrenFound){
+            flag = true;
+            for(OFGelement ofgElement: ofgRoot.getChildren()){
+                createOfg(ofgElement, linesContainer, lastFileSelected, projectFile, ofgElement.getPackageName());
+            }
+        }
+        return flag;
     }
     
     /**
@@ -322,8 +312,9 @@ public class ProjectReader {
     /**
      * Takes a file and goes over his folders finding java files and other directories, adding them to global arrays.
      * @param file 
+     * @param cycle 
      */
-    public void navigateFolders(File file){
+    public void navigateFolders(File file, boolean cycle){
         if(file.isDirectory()){
             String[] names = file.list(); //obtiene todas las carpetas hijo de file.
             for(String name: names){ //recorre cada una de las carpetas hijo.
@@ -333,6 +324,9 @@ public class ProjectReader {
                     javaFiles.add(subFile);
                 } else if(subFile.isDirectory()){
                     directoryFiles.add(subFile);
+                    if(cycle){
+                        navigateFolders(subFile, cycle);
+                    }
                 }
             }
         }
@@ -345,6 +339,7 @@ public class ProjectReader {
      * @throws FileNotFoundException 
      */
     private JavaFileAnalized readJavaFile(File file) throws FileNotFoundException {
+//        System.out.println(file.getAbsolutePath());
         Line line;
         ArrayList<Line> lines;
         JavaFileAnalized javaFileAnalized = new JavaFileAnalized();

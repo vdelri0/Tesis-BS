@@ -16,48 +16,49 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class OFGView {
     private OFGelement ofg;
-    private String rootId;
-    private String lastId;
-    boolean firstElement;// Indicates if a OFG elemet is a first element
+    private int idCounter;
     
     /**
      * Initializes the graph scene creating all the nodes and edges.
      */
     public void initGraph(){
+
         OFGraphScene scene = new OFGraphScene ();
+        idCounter = 1;
+        String id = "Node:"+ofg.getLine().getLineOfCode()+" ("+Integer.toString(idCounter)+")";
         int rootX = 100;
         int rootY = 100;
         int x = 400;
         int y = 0;
-        firstElement = true;
-        Widget root = createOFGelement(ofg, scene);
+        
+        Widget root = createOFGelement(ofg, scene, id);
         defineLocation(root, rootX, rootY);
-        createChildrensInOfg( ofg, rootX, rootY, x, y, scene);
+        createChildrensInOfg( ofg, rootX, rootY, x, y, scene, id);
         
         SceneSupport.show(scene.createView());
     }
     
-    public void createChildrensInOfg(OFGelement ofgElement,int rootX, int rootY, int x, int y, OFGraphScene scene){
+    public void createChildrensInOfg(OFGelement ofgElement,int rootX, int rootY, int x, int y, OFGraphScene scene, String fatherId){
         if(!ofgElement.getChildren().isEmpty()){
+            x = x + 400;
+            y = y - rootY;
             for (OFGelement element : ofgElement.getChildren()) {
-                Widget child = createOFGelement(element, scene);
-                defineLocation(child, rootX + x, y);
-                createRelation(scene, rootId, "Node:"+element.getLine().getLineOfCode());
+                idCounter = idCounter + 1;
+                String id = "Node:"+element.getLine().getLineOfCode()+" ("+Integer.toString(idCounter)+")";
+                Widget child = createOFGelement(element, scene, id);
+                
+                defineLocation(child, x, y);
+                createRelation(scene, fatherId, id);
                 y = y + rootY;
-                createChildrensInOfg(element, rootX, rootY, x, y, scene);
+                createChildrensInOfg(element, rootX, rootY, x, y, scene, id);
             }
         }
     }
     
-    public Widget createOFGelement(OFGelement element, OFGraphScene scene){
-        String id = "Node:"+element.getLine().getLineOfCode();
+    public Widget createOFGelement(OFGelement element, OFGraphScene scene, String id){
         Widget widget = scene.addNode (id);
         widget.setToolTipText("-Package:"+element.getPackageName()+"   -Class:"+element.getClassName()+"   -Method:"+element.getMethodName());
-            if(firstElement){
-                rootId = id;
-                firstElement = false;
-            }
-            return widget;
+        return widget;
     }
     
     public void createRelation(OFGraphScene scene, String source, String target){
@@ -91,32 +92,6 @@ public class OFGView {
         this.ofg = ofg;
     }
 
-    public String getRootId() {
-        return rootId;
-    }
-
-    public void setRootId(String rootId) {
-        this.rootId = rootId;
-    }
-
-    public String getLastId() {
-        return lastId;
-    }
-
-    public void setLastId(String lastId) {
-        this.lastId = lastId;
-    }
-
-    public boolean isFirstElement() {
-        return firstElement;
-    }
-
-    public void setFirstElement(boolean firstElement) {
-        this.firstElement = firstElement;
-    }
-    
-    
-    
     /**
      * Ejemplos que se pueden usar:
      * -Demo2 //Cuando tocas el label las letras y el fondo cambian de color.

@@ -55,6 +55,9 @@ public class KBConnectorTest {
         Assert.assertEquals("methodDeclaration",analyzeLine(expression).getType()); 
         expression = "public static void testObjectInstantiation(int i, int b)" + ConstantsManager.LINE_ENDING;
         Assert.assertEquals("methodDeclaration",analyzeLine(expression).getType());
+        expression = "    public int size() {\r";
+        Assert.assertEquals("methodDeclaration",analyzeLine(expression).getType());
+           
     }
     
     @Test
@@ -81,6 +84,24 @@ public class KBConnectorTest {
         Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType()); 
         expression = "conector.creadorDeConectores(ofg,ofg2);" + ConstantsManager.LINE_ENDING;
         Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType()); 
+        expression = "conector.creadorDeConectores(new ofg());" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType()); 
+        expression = "conector.creadorDeConectores(new ofg(parameter1), new ofg2());" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType()); 
+        expression = "conector.creadorDeConectores(\"SDFSDFSDF\", new ofg2());" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType()); 
+        expression = "conector.creadorDeConectores(\"SDFSDFSDF\", new ofg2(),\"SDFLSKJDFLSKD\");" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType());
+        expression = "conector.creadorDeConectores(\"SDFSDFSDF\", objeto.metodo());" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType());
+        expression = "conector.creadorDeConectores(\"SDFSDFSDF\", metodo());" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocation",analyzeLine(expression).getType());
+    }
+    
+    @Test
+    public void testObjectMethodInvocationListener(){
+        String expression = "editor.addPropertyChangeListener(new PropertyChangeListener() {" + ConstantsManager.LINE_ENDING;
+        Assert.assertEquals("objectMethodInvocationListener", analyzeLine(expression).getType());
     }
     
     @Test

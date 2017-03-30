@@ -7,6 +7,7 @@ package view;
 
 import controller.Coordinator;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -16,12 +17,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -32,7 +34,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
-import org.openide.util.Exceptions;
 
 /**
  * This jframeForm is the first view of the UI
@@ -51,6 +52,10 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     private JPanel panel;
     private File projectFolder;
     private File lastSelectedFilePath;
+    private ImageIcon animatedGif;
+    private JLabel labelProgessBar;
+    private JFrame jframeProgressBar;
+    private JPanel panelProgressBar;
 
     /**
      * Creates new form MainWindow
@@ -61,6 +66,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         setTitle("TesisFinalProgram");
         setResizable(false);
         setLocationRelativeTo(null);
+        progressBarInit();
         jTree.setRootVisible(false);
         jTree.putClientProperty("JTree.lineStyle", "None");
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
@@ -179,7 +185,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }
 
     private void jTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTreeValueChanged
         Object lastPathComponent = evt.getNewLeadSelectionPath().getLastPathComponent();
@@ -197,7 +203,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
                 JOptionPane.showMessageDialog(null, selectAJavaFile);
             }
         } 
-    }//GEN-LAST:event_jTreeValueChanged
+    }
     
     /**
      * Changes the path of the open folder to a local variable and makes a call to "defineTreeModel()"
@@ -251,10 +257,13 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             if(line.isState() && line.getType().equals("objectMethodInvocation")){
                 try {
                     OFGView ofgView= new OFGView();
-                    OFGelement ofg = coordinator.analyzeAllSourceCode( line, lastSelectedFilePath);
+                    jframeProgressBar.setVisible(true);
+                    OFGelement ofg = coordinator.analyzeAllSourceCode( line, lastSelectedFilePath, projectFolder);
                     XmlConversor.createXmlDocument(ofg);
+                    jframeProgressBar.setVisible(false);
                     ofgView.setOfg(ofg);
                     ofgView.initGraph();
+                    
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
@@ -263,11 +272,23 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             } else {
                 JOptionPane.showMessageDialog(null, invalidSintaxStructure);
             }
-//              Obtener el texto y mostrarlo en el jtextpanel
-//              jTextPane1.setText(line.getType());
     }
     
-    
+    public void progressBarInit(){
+        java.net.URL imgUrl = getClass().getResource("../images/ajax-loader.gif");
+        animatedGif = new ImageIcon(imgUrl); 
+        jframeProgressBar = new JFrame();
+        panelProgressBar = new JPanel();
+        labelProgessBar = new JLabel(animatedGif);
+        labelProgessBar.setText("\n\nUn momento por favor...");
+        panelProgressBar.add(labelProgessBar);
+        jframeProgressBar.add(panelProgressBar);
+        jframeProgressBar.setSize(new Dimension(320,64));
+        jframeProgressBar.setLocationRelativeTo(null);
+        jframeProgressBar.setUndecorated(true);
+//        jframeProgressBar.setVisible(true);
+        jframeProgressBar.setAlwaysOnTop(true);
+    }
 
     public void mousePressed(MouseEvent e) {
     }

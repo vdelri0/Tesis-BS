@@ -27,6 +27,8 @@ import org.xml.sax.SAXException;
  * @author victor del rio
  */
 public class XmlConversor {
+    
+    
     public Coordinator coordinator;
 
     public Coordinator getCoordinator() {
@@ -39,6 +41,10 @@ public class XmlConversor {
     
     public static void createXmlDocument(OFGelement ofgRoot){
         String xmlString = createXMLOFG(ofgRoot);
+        String[] xmlSplit = xmlString.split("\n");
+        for (int i = 0; i < xmlSplit.length; i++) {
+            System.out.println("#"+i+xmlSplit[i]);
+        }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
         DocumentBuilder builder;  
         try  
@@ -69,30 +75,22 @@ public class XmlConversor {
      * @return 
      */
     public static String createXMLOFG(OFGelement ofgRoot){
-        String lineJump = "\n";
-        String tab = "\t";
-        String doubleTab = "\t\t";
+       String lineJump = "\n";
+       String tab = "\t";
+       String doubleTab = "\t\t";
         
         
         String ofg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \n<!--comentario-->";
         ofg = ofg + tab + lineJump;
         ofg = ofg + tab + "<OfgElement>" + lineJump;
         ofg = ofg + doubleTab + "<Line>"+ofgRoot.getLine().getLineOfCode().replaceAll("(\\r|\\n)", "")+"</Line>" + lineJump ;
+        ofg = ofg + doubleTab + "<TypeOfLine>"+ofgRoot.getLine().getType()+"</TypeOfLine>" + lineJump ;
         ofg = ofg + doubleTab + "<Package>"+ofgRoot.getPackageName()+"</Package>" + lineJump;
         ofg = ofg + doubleTab + "<Class>"+ofgRoot.getClassName()+"</Class>" + lineJump;
         ofg = ofg + doubleTab + "<Method>"+ofgRoot.getMethodName()+"</Method>" + lineJump;
         ofg = ofg + doubleTab + "<Children>" + lineJump;
         
-        
-        for (OFGelement ofgElement : ofgRoot.getChildren()) {
-            ofg = ofg + tab + doubleTab + "<OfgElement>" + lineJump;
-            ofg = ofg + doubleTab + doubleTab + "<Line>"+ofgElement.getLine().getLineOfCode().replaceAll("(\\r|\\n)", "")+"</Line>" + lineJump;
-            ofg = ofg + doubleTab + doubleTab + "<Package>"+ofgElement.getPackageName()+"</Package>" + lineJump;
-            ofg = ofg + doubleTab + doubleTab + "<Class>"+ofgElement.getClassName()+"</Class>" + lineJump;
-            ofg = ofg + doubleTab + doubleTab + "<Method>"+ofgElement.getMethodName()+"</Method>" + lineJump;
-            ofg = ofg + createChildrensXML(ofgElement, tab, doubleTab, lineJump);
-            ofg = ofg + tab + doubleTab + "</OfgElement>" + lineJump;
-        }
+        ofg = ofg + createChildrensXML(ofgRoot, tab, doubleTab, lineJump);
         
         ofg = ofg + doubleTab + "</Children>" + lineJump;
         ofg = ofg + tab + "</OfgElement>";
@@ -109,10 +107,13 @@ public class XmlConversor {
      */
     public static String createChildrensXML(OFGelement ofgElement, String tab, String doubleTab, String lineJump){
         String childrens = "";
+        tab = tab + "\t";
+        doubleTab = doubleTab + "\t\t";
         if(!ofgElement.getChildren().isEmpty()){
             for (OFGelement element : ofgElement.getChildren()) {
                 childrens = childrens + tab + doubleTab + "<OfgElement>" + lineJump;
                 childrens = childrens + doubleTab + doubleTab + "<Line>"+element.getLine().getLineOfCode().replaceAll("(\\r|\\n)", "")+"</Line>" + lineJump;
+                childrens = childrens + doubleTab + doubleTab + "<TypeOfLine>"+element.getLine().getType()+"</TypeOfLine>" + lineJump ;
                 childrens = childrens + doubleTab + doubleTab + "<Package>"+element.getPackageName()+"</Package>" + lineJump;
                 childrens = childrens + doubleTab + doubleTab + "<Class>"+element.getClassName()+"</Class>" + lineJump;
                 childrens = childrens + doubleTab + doubleTab + "<Method>"+element.getMethodName()+"</Method>" + lineJump;

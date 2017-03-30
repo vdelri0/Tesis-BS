@@ -24,7 +24,6 @@ rule "Evaluate"
     then
         $line.setType($expression.getExpressionName());
         $line.setState(true);
-        System.out.println($expression.getExpressionName());
         update($line);
 end
 

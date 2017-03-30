@@ -8,6 +8,7 @@ package model;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import static model.ConstantsManager.CLASS_DECLARATION;
 import static model.ConstantsManager.METHOD_DECLARATION;
 import static model.ConstantsManager.PACKAGE_DECLARATION;
@@ -142,12 +143,17 @@ public class OFGconverter {
     public static OFGelement createOFGElement(LinesContainer linesContainer, Line line, boolean rootNode, File file){
         String methodName = "";
         String packageName = findPattern(linesContainer.getPackageLine().getLineOfCode(), PACKAGE_DECLARATION, 1);
-        String className = findPattern(linesContainer.getClassLine().getLineOfCode(), CLASS_DECLARATION, 2);
+        if(linesContainer.getClassLine() == null){
+            System.err.println(linesContainer.getFile().getAbsolutePath());
+        }
+        String className = findPattern(linesContainer.getClassLine().getLineOfCode(), CLASS_DECLARATION, 3);
+        
+        
         int lastIndex = 0;
         for (Line methodLine : linesContainer.getMethodsLines()) {
             if(methodLine.getIndex()>lastIndex && methodLine.getIndex()<line.getIndex()){
                 lastIndex = methodLine.getIndex();
-                methodName = findPattern(methodLine.getLineOfCode(), METHOD_DECLARATION, 4);
+                methodName = findPattern(methodLine.getLineOfCode(), METHOD_DECLARATION, 3);
             } 
         }
         OFGelement ofgElement = new OFGelement(true, line, packageName, className, methodName, linesContainer, file);
@@ -164,12 +170,23 @@ public class OFGconverter {
      * @return 
      */
     public static String findPattern(String lineOfCode, String regex, int groupIndex){
-        String found = "";    
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(lineOfCode);
-        if (matcher.find()){
-            found = matcher.group(groupIndex);
-        }
+        String found = "";
+//        try {
+//            if("    public int size() {\r".equals(lineOfCode)){
+//                System.err.println("We are in modafoca");
+//            }
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(lineOfCode);
+            if (matcher.find()){
+                found = matcher.group(groupIndex);
+            }
+//        } catch (StackOverflowError e) {
+//            System.out.println(lineOfCode);
+//            System.out.println(regex);
+//            System.out.println(groupIndex);
+//            System.err.println("--------------------------------------------Nivel de recursion reportado: " + e.getStackTrace().length);
+//        }
+            
         return found;
     }
 }

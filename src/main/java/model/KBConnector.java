@@ -54,7 +54,18 @@ public class KBConnector {
     public Object enterObjectInKnowledgeBase(Object object){
         ksession.insert(object);
         ksession.fireAllRules();
+        
         return object;
+    }
+    
+    public void deleteObjectFromKnowledgeBase(Object object){
+        ksession.retract(ksession.getFactHandle(object));
+    }
+    
+    public void getAllObjectsFromKnowledgeBase(){
+        for (Object object : ksession.getObjects()) {
+            System.out.println(object.toString());
+        }
     }
     
     public KnowledgeBuilder getKbuilder() {

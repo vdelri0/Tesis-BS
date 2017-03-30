@@ -5,6 +5,7 @@
  */
 package model;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -12,6 +13,7 @@ import java.util.ArrayList;
  * @author victor
  */
 public class LinesContainer {
+    private File file;
     private Line packageLine;
     private Line classLine;
     private ArrayList<Line> methodsLines = new ArrayList<Line>();
@@ -21,6 +23,14 @@ public class LinesContainer {
     private ArrayList<Line> methodInvocationLines = new ArrayList<Line>();
     private boolean analyzed;
     private int numberOfLines;
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 
     public Line getPackageLine() {
         return packageLine;

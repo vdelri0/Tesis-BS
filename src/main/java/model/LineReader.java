@@ -5,6 +5,8 @@ import controller.Coordinator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class alow to read a line from a text format (txt)
@@ -16,22 +18,10 @@ public class LineReader {
     private Coordinator coordinator;
     private KBConnector kbconnector;
 
-//    /**
-//     * This method allows to read line by line the source code
-//     * @param lineOfCode
-//     * @return 
-//     */
-//    public String readLineOfCode(String lineOfCode){
-//        lineOfCode = scanner.nextLine();
-//        return lineOfCode;
-//    }
-
     public LineReader() {
         kbconnector = new KBConnector();
     }
-    
-    
-    
+
     /**
      * It allows to read all the File source code
      * @param path
@@ -51,7 +41,26 @@ public class LineReader {
     public Line analyzeLineOfCode(String lineOfCode){
         Line line = new Line();
         line.setLineOfCode(lineOfCode);
-        line = (Line) kbconnector.enterObjectInKnowledgeBase(line);
+//        line = (Line) kbconnector.enterObjectInKnowledgeBase(line);
+//        kbconnector.deleteObjectFromKnowledgeBase(line);
+        line = analize(line);
+
+        return line;
+    }
+    
+    public Line analize(Line line){
+        ExpressionLibrary library = new ExpressionLibrary();
+        library.declareLibrary();
+        for(Expression expression: library.getExpressions().values()){
+            Pattern pattern = Pattern.compile(expression.getRegularExpression());
+            Matcher matcher = pattern.matcher(line.getLineOfCode());
+            if(matcher.find() && line.isState()==false){
+                line.setType(expression.getExpressionName());
+//                System.err.printf(line.getLineOfCode());
+//                System.out.printf(line.getType());
+                line.setState(true);
+            }
+        }
         return line;
     }
 

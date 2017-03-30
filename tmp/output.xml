@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><!--comentario--><OfgElement>
+		<Line>        mb.add(m);</Line>
+		<TypeOfLine>objectMethodInvocation</TypeOfLine>
+		<Package>org.jhotdraw.app</Package>
+		<Class>DefaultMDIApplication</Class>
+		<Method>null</Method>
+		<Children>
+		</Children>
+	</OfgElement>
