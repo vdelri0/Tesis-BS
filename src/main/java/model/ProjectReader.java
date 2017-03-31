@@ -16,34 +16,34 @@ import static model.ConstantsManager.OBJECT_METHOD_INVOCATION;
 import org.apache.commons.io.FilenameUtils;
 
 /**
- *
+ * This class performs all the processes of analysis of the structure of the project.
  * @author victor
  */
 public class ProjectReader {
     private LineReader lineReader = new LineReader();
-    ArrayList<File> javaFiles = new ArrayList<File>();
-    ArrayList<File> directoryFiles = new ArrayList<File>();
-    CopyOnWriteArrayList<LinesContainer> containersOfAnalized = new CopyOnWriteArrayList<LinesContainer>(); //Contiene todos los archivos desglozados
-    CopyOnWriteArrayList<File> filesAnalized = new CopyOnWriteArrayList<File>();
+    private ArrayList<File> javaFiles = new ArrayList<File>();
+    private ArrayList<File> directoryFiles = new ArrayList<File>();
+    private CopyOnWriteArrayList<LinesContainer> containersOfAnalized = new CopyOnWriteArrayList<LinesContainer>(); //Contiene todos los archivos desglozados
+    private CopyOnWriteArrayList<File> filesAnalized = new CopyOnWriteArrayList<File>();
     
     
     /**
-     * Toma el archivo y la sentencia escogida para crear el grafo de flujo de objetos 
-     * @param file
+     * Take the file and the chosen statement to create the object flow graph.
      * @param root
      * @param lastFileSelected
+     * @param projectFile
      * @return
      * @throws FileNotFoundException 
      */
     public OFGelement analizeAllSourceCode(Line root, File lastFileSelected, File projectFile) throws FileNotFoundException, IOException{
         String packageName = "";
         File lastFileSelectedParent = lastFileSelected.getParentFile();
-        JavaFileAnalized javaFileAnalized = readJavaFile(lastFileSelected); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
-        LinesContainer linesContainer = organizeLinesOfCode(javaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
+        JavaFileAnalized javaFileAnalized = readJavaFile(lastFileSelected); 
+        LinesContainer linesContainer = organizeLinesOfCode(javaFileAnalized); 
         filesAnalized.add(lastFileSelected);
         linesContainer.setFile(lastFileSelected);
         containersOfAnalized.add(linesContainer);
-        OFGelement ofgRoot = OFGconverter.defineTypeOfOFGElement(linesContainer, root, true, lastFileSelected);//Aqui debemos pasar el objeto a un metodo para determinar que clase estamos buscando y realizar el mismo proceso de nuevo hasta que no halla mas elementos del ofg.
+        OFGelement ofgRoot = OFGconverter.defineTypeOfOFGElement(linesContainer, root, true, lastFileSelected);
         navigateFolders(projectFile, true);
         ofgRoot = createOfg(ofgRoot, linesContainer, lastFileSelectedParent, projectFile, packageName);
         javaFiles.clear();
@@ -53,25 +53,26 @@ public class ProjectReader {
         return  ofgRoot;
     }
     
-    
+    /**
+     * It breaks the project into files to which it performs a process to reach the ofg.
+     * @param ofgElement
+     * @param linesContainer
+     * @param lastFileSelected
+     * @param projectFile
+     * @param packageName
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public OFGelement createOfg(OFGelement ofgElement, LinesContainer linesContainer, File lastFileSelected, File projectFile, String packageName) throws FileNotFoundException, IOException{
-        
-        boolean flag = false;
-        if("            p.setApplication(this);".equals(ofgElement.getLine().getLineOfCode())){
-            System.err.println(lastFileSelected.getAbsolutePath());
-            System.out.println(ofgElement.getLine().getLineOfCode());
-            System.err.println(ofgElement.getLine().getType());
-        }
-        flag = findChildrensInJavaFile(linesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, lastFileSelected, projectFile);//1. Que el metodo llamado se encuentre dentro de la misma clase.
+        boolean flag;
+        flag = findChildrensInJavaFile(linesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, lastFileSelected, projectFile);
         if(!flag){
             if(!javaFiles.isEmpty()){
                 for(File javaFile: javaFiles){
                     if(!filesAnalized.contains(javaFile)){
-                        if("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\app\\AbstractProject.java".equals(javaFile.getAbsolutePath())){
-                            System.out.println("Llegue al archivo");
-                        }
-                    JavaFileAnalized auxJavaFileAnalized = readJavaFile(javaFile); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
-                    LinesContainer auxLinesContainer = organizeLinesOfCode(auxJavaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
+                    JavaFileAnalized auxJavaFileAnalized = readJavaFile(javaFile); 
+                    LinesContainer auxLinesContainer = organizeLinesOfCode(auxJavaFileAnalized); 
                     auxLinesContainer.setFile(javaFile);
                     findChildrensInJavaFile(auxLinesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, javaFile, projectFile);
                     filesAnalized.add(javaFile);
@@ -79,9 +80,6 @@ public class ProjectReader {
                     } else {
                         for(LinesContainer auxLinesContainer: containersOfAnalized){
                             if(auxLinesContainer.getFile().equals(javaFile)){
-                                if(auxLinesContainer.getFile().getAbsolutePath().equals("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\app\\AbstractProject.java")){
-                                    System.out.println("");
-                                }
                                 findChildrensInJavaFile(auxLinesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, javaFile, projectFile);
                             }
                         }
@@ -89,18 +87,17 @@ public class ProjectReader {
                 }
             } 
         }
-        
-        
         return ofgElement;
     }
     
     
     /**
-     * Este metodo busca expresiones que sean validas para agregar al ofg, las cuales se encuentren entre dos metodos.
+     * This method looks for expressions that are valid to add to the ofg, which are between two methods.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine
      * @param index
+     * @param file
      */
     public void findChildrensBetweenMethods(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, int index, File file){
         Line nextMethodLine = linesContainer.getMethodsLines().get(index+1);
@@ -111,11 +108,12 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las invocaciones de objetos a metodos, que se encuentran entre metodos
+     * This method looks for all invocations of objects to methods, which are between methods
      * @param linesContainer
      * @param methodLine
      * @param nextMethodLine
      * @param ofgRoot 
+     * @param file 
      */
     public void objectMethodInvocationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line objectMethodInvocationLine: linesContainer.getObjectMethodInvocationLines()){
@@ -126,14 +124,15 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las invocaciones de metodos, que se encuentran entre metodos.
+     * This method looks for all invocations of methods, which are between methods.
      * @param linesContainer
      * @param methodLine
      * @param nextMethodLine
      * @param ofgRoot 
+     * @param file 
      */
     public void methodInvocationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
-        for(Line methodInvocationLine: linesContainer.getMethodInvocationLines()){ //Buscamos entre todas las invocaciones de methodos.
+        for(Line methodInvocationLine: linesContainer.getMethodInvocationLines()){ 
             if(methodInvocationLine.getIndex() > methodLine.getIndex() && methodInvocationLine.getIndex() < nextMethodLine.getIndex()){
                 assignChild(ofgRoot, linesContainer, methodInvocationLine, false, file);
             }
@@ -141,11 +140,12 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las instanciaciones de objetos, que se encuentran entre metodos.
+     * This method looks for all instantiations of objects, which are between methods.
      * @param linesContainer
      * @param methodLine
      * @param nextMethodLine
      * @param ofgRoot 
+     * @param file 
      */
     public void objectInstantiationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line objectInstantiationLine: linesContainer.getObjectInstantiationLines()){
@@ -156,11 +156,12 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las asignaciones de variables a objetos, que se encuentran entre metodos.
+     * This method looks for all assignments of variables to objects, which are between methods.
      * @param linesContainer
      * @param methodLine
      * @param nextMethodLine
      * @param ofgRoot 
+     * @param file 
      */
     public void objectVariableAssignationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line ObjectVariableAssignationLine: linesContainer.getObjectVariableAssignationLines()){
@@ -171,10 +172,11 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca expresiones que sean validas para agregar al ofg, en el ultimo metodo.
+     * This method looks for expressions that are valid to add to the ofg, in the last method.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine
+     * @param file
      */
     public void findChildrensAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         objectMethodInvocationAfterLastMethod(ofgRoot, linesContainer, methodLine, file);
@@ -185,10 +187,11 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las invocaciones de objetos a metodos, que se encuentran despues del ultimo metodo.
+     * This method looks for all invocations of objects to methods, which are found after the last method.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine 
+     * @param file 
      */
     public void objectMethodInvocationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line objectMethodInvocationLine: linesContainer.getObjectMethodInvocationLines()){
@@ -199,10 +202,11 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las invocaciones de metodos, que se encuentran despues del ultimo metodo.
+     * This method searches for all invocations of methods, which are found after the last method.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine 
+     * @param file 
      */
     public void methodInvocationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line methodInvocationLine: linesContainer.getMethodInvocationLines()){
@@ -213,10 +217,11 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las instanciaciones de objetos, que se encuentran despues del ultimo metodo.
+     * This method looks for all instantiations of objects, which are found after the last method.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine 
+     * @param file 
      */
     public void objectInstantiationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line objectInstantiationLine: linesContainer.getObjectInstantiationLines()){
@@ -227,10 +232,11 @@ public class ProjectReader {
     }
     
     /**
-     * Este metodo busca todas las asignaciones de variables a objetos, que se encuentran despues del ultimo metodo.
+     * This method looks for all assignments of variables to objects, which are found after the last method.
      * @param ofgRoot
      * @param linesContainer
      * @param methodLine 
+     * @param file 
      */
     public void objectVariableAssignationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line ObjectVariableAssignationLine: linesContainer.getObjectVariableAssignationLines()){
@@ -274,7 +280,7 @@ public class ProjectReader {
     }
     
     /**
-     * Busca todos los hijos que se encuentran dentro de un archivo java. (ya desglozado en un LinesContainer)
+     * Find all the children that are inside a java file. (Already broken in a LinesContainer)
      * @param linesContainer
      * @param objectMethodInvocation
      * @param lastFileSelected
@@ -287,20 +293,13 @@ public class ProjectReader {
         boolean flag = false;
         boolean childrenFound = false;
         String methodRootName = OFGconverter.findPattern(objectMethodInvocation,OBJECT_METHOD_INVOCATION, 3);
-//        ArrayList<OFGelement> initialChildrens = new ArrayList<OFGelement>();
-//        if(!ofgRoot.getChildren().isEmpty()){
-//            for (OFGelement ofgElement : ofgRoot.getChildren()) {
-//                initialChildrens.add(ofgElement);
-//            }
-//        }
-        for(int i = 0; i < linesContainer.getMethodsLines().size(); i++){ //Buscamos todas las lineas de metodos de la clase.
+        for(int i = 0; i < linesContainer.getMethodsLines().size(); i++){ 
             Line methodLine = linesContainer.getMethodsLines().get(i);
-            String methodName = OFGconverter.findPattern(methodLine.getLineOfCode(),METHOD_DECLARATION, 3); //Sacamos el nombre del metodo que estamos comparando.
-            if(methodName.equals(methodRootName)){ //comparamos si coinciden
-                /*Aqui debemos colocar la variable para indicar que se cumplio este caso.*/
-                if(i<linesContainer.getMethodsLines().size()-1){//En caso de que i no sea el ultimo elemento del array
+            String methodName = OFGconverter.findPattern(methodLine.getLineOfCode(),METHOD_DECLARATION, 3); 
+            if(methodName.equals(methodRootName)){ 
+                if(i<linesContainer.getMethodsLines().size()-1){
                     findChildrensBetweenMethods(ofgRoot, linesContainer, methodLine, i, lastFileSelected);
-                } else {//En caso de que i sea el ultimo elemento del array
+                } else {
                     findChildrensAfterLastMethod(ofgRoot, linesContainer, methodLine, lastFileSelected);
                 }
                 Iterator<OFGelement> iterator = ofgRoot.getChildren().iterator();
@@ -334,8 +333,8 @@ public class ProjectReader {
     }
     
     /**
-     * Desgloza el objeto javaFileAnalized, tomando unicamente las lineas que pertenecen a un tipo, 
-     * para convertirlo en un objeto de clase la LinesContainer.
+     * Unbind the javaFileAnalized object, taking only the lines belonging to a type, to make it a class object
+     * in the LinesContainer.
      * @param javaFileAnalized
      * @return 
      */
@@ -379,8 +378,7 @@ public class ProjectReader {
     }
     
     /**
-     * Toma un archivo de codigo java y lo desglosa analizando cada una de sus lineas
-     * para convertirlo en un objeto JavaFileAnalized.
+     * Take a java code file and break it down by analyzing each of its lines to make it a JavaFileAnalized object.
      * @return
      * @throws FileNotFoundException 
      */

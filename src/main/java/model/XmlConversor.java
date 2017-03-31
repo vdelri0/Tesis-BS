@@ -13,6 +13,7 @@ import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -39,6 +40,10 @@ public class XmlConversor {
         this.coordinator = coordinator;
     }
     
+    /**
+     * This method creates the xml file.
+     * @param ofgRoot 
+     */
     public static void createXmlDocument(OFGelement ofgRoot){
         String xmlString = createXMLOFG(ofgRoot);
         String[] xmlSplit = xmlString.split("\n");
@@ -57,6 +62,8 @@ public class XmlConversor {
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(source, result);
         } catch (ParserConfigurationException e) {  
             e.printStackTrace();  
@@ -70,7 +77,7 @@ public class XmlConversor {
     }
     
     /**
-     * Este metodo crea un String xml a partir de un OFGelement.
+     * This method creates an xml String from an OFGelement.
      * @param ofgRoot
      * @return 
      */
@@ -80,8 +87,7 @@ public class XmlConversor {
        String doubleTab = "\t\t";
         
         
-        String ofg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \n<!--comentario-->";
-        ofg = ofg + tab + lineJump;
+        String ofg = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>" + lineJump;
         ofg = ofg + tab + "<OfgElement>" + lineJump;
         ofg = ofg + doubleTab + "<Line>"+ofgRoot.getLine().getLineOfCode().replaceAll("(\\r|\\n)", "")+"</Line>" + lineJump ;
         ofg = ofg + doubleTab + "<TypeOfLine>"+ofgRoot.getLine().getType()+"</TypeOfLine>" + lineJump ;
@@ -98,7 +104,7 @@ public class XmlConversor {
     }
     
     /**
-     * Este metodo se llama de forma recursiva para generar a los hijos del xml.
+     * This method is called recursively to generate the children of xml.
      * @param ofgElement
      * @param tab
      * @param doubleTab

@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- *
+ * This is the class that allows the general object node ofg.
  * @author victor
  */
 public class OFGelement {

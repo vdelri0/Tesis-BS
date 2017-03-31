@@ -1,43 +1,89 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?><!--comentario--><OfgElement>
-		<Line>        middleMan.recruitPerson();</Line>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<OfgElement>
+		<Line>        middleMan.callReclutaidor();</Line>
 		<TypeOfLine>objectMethodInvocation</TypeOfLine>
 		<Package>A</Package>
 		<Class>Politician</Class>
 		<Method>recruit</Method>
 		<Children>
 						<OfgElement>
-								<Line>        person.setFirstName(firstName);</Line>
+								<Line>        reclutaidor.recruitPerson();</Line>
 								<TypeOfLine>objectMethodInvocation</TypeOfLine>
-								<Package>A</Package>
+								<Package>B</Package>
 								<Class>MiddleMan</Class>
-								<Method>recruitPerson</Method>
+								<Method>callReclutaidor</Method>
 								<Children>
+									<OfgElement>
+												<Line>        person.setFirstName(firstName);</Line>
+												<TypeOfLine>objectMethodInvocation</TypeOfLine>
+												<Package>B</Package>
+												<Class>Reclutador</Class>
+												<Method>recruitPerson</Method>
+												<Children>
+												<OfgElement>
+																<Line>        Visa visa = new Visa();</Line>
+																<TypeOfLine>objectInstantiation</TypeOfLine>
+																<Package>B</Package>
+																<Class>Person</Class>
+																<Method>setFirstName</Method>
+																<Children>
+																</Children>
+												</OfgElement>
+												</Children>
+									</OfgElement>
+									<OfgElement>
+												<Line>        person.setLastName(lastName);</Line>
+												<TypeOfLine>objectMethodInvocation</TypeOfLine>
+												<Package>B</Package>
+												<Class>Reclutador</Class>
+												<Method>recruitPerson</Method>
+												<Children>
+												</Children>
+									</OfgElement>
+									<OfgElement>
+												<Line>        person.setAge(age);</Line>
+												<TypeOfLine>objectMethodInvocation</TypeOfLine>
+												<Package>B</Package>
+												<Class>Reclutador</Class>
+												<Method>recruitPerson</Method>
+												<Children>
+												</Children>
+									</OfgElement>
+									<OfgElement>
+												<Line>        person.defineVisa();</Line>
+												<TypeOfLine>objectMethodInvocation</TypeOfLine>
+												<Package>B</Package>
+												<Class>Reclutador</Class>
+												<Method>recruitPerson</Method>
+												<Children>
+												<OfgElement>
+																<Line>        Visa visa = new Visa();</Line>
+																<TypeOfLine>objectInstantiation</TypeOfLine>
+																<Package>B</Package>
+																<Class>Person</Class>
+																<Method>defineVisa</Method>
+																<Children>
+																</Children>
+												</OfgElement>
+												</Children>
+									</OfgElement>
+									<OfgElement>
+												<Line>        Person person = new Person();</Line>
+												<TypeOfLine>objectInstantiation</TypeOfLine>
+												<Package>B</Package>
+												<Class>Reclutador</Class>
+												<Method>recruitPerson</Method>
+												<Children>
+												</Children>
+									</OfgElement>
 								</Children>
 						</OfgElement>
 						<OfgElement>
-								<Line>        person.setLastName(lastName);</Line>
-								<TypeOfLine>objectMethodInvocation</TypeOfLine>
-								<Package>A</Package>
-								<Class>MiddleMan</Class>
-								<Method>recruitPerson</Method>
-								<Children>
-								</Children>
-						</OfgElement>
-						<OfgElement>
-								<Line>        person.setAge(age);</Line>
-								<TypeOfLine>objectMethodInvocation</TypeOfLine>
-								<Package>A</Package>
-								<Class>MiddleMan</Class>
-								<Method>recruitPerson</Method>
-								<Children>
-								</Children>
-						</OfgElement>
-						<OfgElement>
-								<Line>        Person person = new Person();</Line>
+								<Line>        Reclutador reclutaidor = new Reclutador();</Line>
 								<TypeOfLine>objectInstantiation</TypeOfLine>
-								<Package>A</Package>
+								<Package>B</Package>
 								<Class>MiddleMan</Class>
-								<Method>recruitPerson</Method>
+								<Method>callReclutaidor</Method>
 								<Children>
 								</Children>
 						</OfgElement>

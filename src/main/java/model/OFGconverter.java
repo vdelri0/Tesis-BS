@@ -8,13 +8,12 @@ package model;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
 import static model.ConstantsManager.CLASS_DECLARATION;
 import static model.ConstantsManager.METHOD_DECLARATION;
 import static model.ConstantsManager.PACKAGE_DECLARATION;
 
 /**
- *
+ * This class handles everything related to the creation of elements ofg.
  * @author victor
  */
 public class OFGconverter {
@@ -22,7 +21,7 @@ public class OFGconverter {
     public static String[] typesOfLine = {"packageDeclaration", "classDeclaration", "methodDeclaration", "objectInstantiation", "objectVariableAssignation", "objectMethodInvocation", "methodInvocation"};
     
     /**
-     * Organiza la linea de codigo dependiendo del tipo al que pertenezca.
+     * Organize the line of code depending on the type to which it belongs.
      * @param linesContainer
      * @param line 
      */
@@ -45,7 +44,7 @@ public class OFGconverter {
     }
     
     /**
-     * Toma el un linesContainer y define a partir de el un elemento del ofg dentro de los 4 tipos disponibles.
+     * It takes a linesContainer and defines from an ofg element within the 4 types available.
      * @param linesContainer
      * @param line
      * @param rootNode 
@@ -58,17 +57,17 @@ public class OFGconverter {
             ofgElement = defineMethodInvocationElement(linesContainer, line, rootNode, ofgElement, file);
             ofgElement = defineObjectInstantiationElement(linesContainer, line, rootNode, ofgElement, file);
             ofgElement = defineObjectVariableAssignationsElement(linesContainer, line, rootNode, ofgElement, file);
-            
         return ofgElement;
     }
     
     /**
-     * Define si la linea de codigo coincide con alguna de las lineas de invocacion de
-     * metodos a partir de objetos pertenecientes al linesContainer y llama a createOFGElement.
+     * Defines whether the line of code matches any of the methods invocation lines from objects belonging 
+     * to the linesContainer and calls createOFGElement.
      * @param linesContainer
      * @param line
      * @param rootNode
      * @param ofgElement
+     * @param file
      * @return 
      */
     public static OFGelement defineObjectMethodInvocationElement(LinesContainer linesContainer, Line line, boolean rootNode, OFGelement ofgElement, File file){
@@ -81,12 +80,13 @@ public class OFGconverter {
     }
     
     /**
-     * Define si la linea de codigo coincide con alguna de las lineas de invocacion de
-     * metodos pertenecientes al linesContainer y llama a createOFGElement.
+     * Defines whether the line of code matches any of the lines invoking methods
+     * belonging to the linesContainer and calls createOFGElement.
      * @param linesContainer
      * @param line
      * @param rootNode
      * @param ofgElement
+     * @param file
      * @return 
      */
     public static OFGelement defineMethodInvocationElement(LinesContainer linesContainer, Line line, boolean rootNode, OFGelement ofgElement, File file){
@@ -99,12 +99,13 @@ public class OFGconverter {
     }
     
     /**
-     * Define si la linea de codigo coincide con alguna de las lineas de instanciacion
-     * de objetos pertenecientes al linesContainer y llama a createOFGElement.
+     * Defines whether the line of code matches any of the instantiation lines of objects 
+     * belonging to the linesContainer and calls createOFGElement.
      * @param linesContainer
      * @param line
      * @param rootNode
      * @param ofgElement
+     * @param file
      * @return 
      */
     public static OFGelement defineObjectInstantiationElement(LinesContainer linesContainer, Line line, boolean rootNode, OFGelement ofgElement, File file){
@@ -117,12 +118,13 @@ public class OFGconverter {
     }
     
     /**
-     * Define si la linea de codigo coincide con alguna de las lineas de asignacion de variables
-     * a objetos pertenecientes al linesContainer y llama a createOFGElement.
+     * Defines whether the line of code matches any of the lines of assignment of variables to objects
+     * belonging to the linesContainer and calls createOFGElement.
      * @param linesContainer
      * @param line
      * @param rootNode
      * @param ofgElement
+     * @param file
      * @return 
      */
     public static OFGelement defineObjectVariableAssignationsElement(LinesContainer linesContainer, Line line, boolean rootNode, OFGelement ofgElement, File file){
@@ -145,12 +147,7 @@ public class OFGconverter {
     public static OFGelement createOFGElement(LinesContainer linesContainer, Line line, boolean rootNode, File file){
         String methodName = "";
         String packageName = findPattern(linesContainer.getPackageLine().getLineOfCode(), PACKAGE_DECLARATION, 1);
-        if(linesContainer.getClassLine() == null){
-            System.err.println(linesContainer.getFile().getAbsolutePath());
-        }
         String className = findPattern(linesContainer.getClassLine().getLineOfCode(), CLASS_DECLARATION, 3);
-        
-        
         int lastIndex = 0;
         for (Line methodLine : linesContainer.getMethodsLines()) {
             if(methodLine.getIndex()>lastIndex && methodLine.getIndex()<line.getIndex()){

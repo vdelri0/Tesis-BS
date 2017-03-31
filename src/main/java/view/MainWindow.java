@@ -7,7 +7,6 @@ package view;
 
 import controller.Coordinator;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -17,9 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.TreeSelectionEvent;
@@ -52,10 +49,7 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
     private JPanel panel;
     private File projectFolder;
     private File lastSelectedFilePath;
-    private ImageIcon animatedGif;
-    private JLabel labelProgessBar;
-    private JFrame jframeProgressBar;
-    private JPanel panelProgressBar;
+
 
     /**
      * Creates new form MainWindow
@@ -66,7 +60,6 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
         setTitle("TesisFinalProgram");
         setResizable(false);
         setLocationRelativeTo(null);
-        progressBarInit();
         jTree.setRootVisible(false);
         jTree.putClientProperty("JTree.lineStyle", "None");
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
@@ -257,10 +250,8 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             if(line.isState() && line.getType().equals("objectMethodInvocation")){
                 try {
                     OFGView ofgView= new OFGView();
-                    jframeProgressBar.setVisible(true);
                     OFGelement ofg = coordinator.analyzeAllSourceCode( line, lastSelectedFilePath, projectFolder);
                     XmlConversor.createXmlDocument(ofg);
-                    jframeProgressBar.setVisible(false);
                     ofgView.setOfg(ofg);
                     ofgView.initGraph();
                     
@@ -272,22 +263,6 @@ public class MainWindow extends javax.swing.JFrame implements MouseListener {
             } else {
                 JOptionPane.showMessageDialog(null, invalidSintaxStructure);
             }
-    }
-    
-    public void progressBarInit(){
-        java.net.URL imgUrl = getClass().getResource("../images/ajax-loader.gif");
-        animatedGif = new ImageIcon(imgUrl); 
-        jframeProgressBar = new JFrame();
-        panelProgressBar = new JPanel();
-        labelProgessBar = new JLabel(animatedGif);
-        labelProgessBar.setText("\n\nUn momento por favor...");
-        panelProgressBar.add(labelProgessBar);
-        jframeProgressBar.add(panelProgressBar);
-        jframeProgressBar.setSize(new Dimension(320,64));
-        jframeProgressBar.setLocationRelativeTo(null);
-        jframeProgressBar.setUndecorated(true);
-//        jframeProgressBar.setVisible(true);
-        jframeProgressBar.setAlwaysOnTop(true);
     }
 
     public void mousePressed(MouseEvent e) {
