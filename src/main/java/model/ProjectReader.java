@@ -57,17 +57,19 @@ public class ProjectReader {
     public OFGelement createOfg(OFGelement ofgElement, LinesContainer linesContainer, File lastFileSelected, File projectFile, String packageName) throws FileNotFoundException, IOException{
         
         boolean flag = false;
-//        if("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\draw\\AbstractCompositeFigure.java".equals(lastFileSelected.getAbsolutePath())){
-//            System.err.println("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\draw\\AbstractCompositeFigure.java");
-//        }
-//        System.err.println(lastFileSelected.getAbsolutePath());
-//        System.out.println(ofgElement.getLine().getLineOfCode());
-//        System.err.println(ofgElement.getLine().getType());
+        if("            p.setApplication(this);".equals(ofgElement.getLine().getLineOfCode())){
+            System.err.println(lastFileSelected.getAbsolutePath());
+            System.out.println(ofgElement.getLine().getLineOfCode());
+            System.err.println(ofgElement.getLine().getType());
+        }
         flag = findChildrensInJavaFile(linesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, lastFileSelected, projectFile);//1. Que el metodo llamado se encuentre dentro de la misma clase.
         if(!flag){
             if(!javaFiles.isEmpty()){
                 for(File javaFile: javaFiles){
                     if(!filesAnalized.contains(javaFile)){
+                        if("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\app\\AbstractProject.java".equals(javaFile.getAbsolutePath())){
+                            System.out.println("Llegue al archivo");
+                        }
                     JavaFileAnalized auxJavaFileAnalized = readJavaFile(javaFile); //obtiene el archivo java analizado que contiene el primer nodo del ofg.
                     LinesContainer auxLinesContainer = organizeLinesOfCode(auxJavaFileAnalized); //obtiene el objeto linesContainer, el cual posee las lineas de codigo clasificadas segun su tipo.
                     auxLinesContainer.setFile(javaFile);
@@ -77,6 +79,9 @@ public class ProjectReader {
                     } else {
                         for(LinesContainer auxLinesContainer: containersOfAnalized){
                             if(auxLinesContainer.getFile().equals(javaFile)){
+                                if(auxLinesContainer.getFile().getAbsolutePath().equals("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\JHotDraw\\src\\app\\AbstractProject.java")){
+                                    System.out.println("");
+                                }
                                 findChildrensInJavaFile(auxLinesContainer, ofgElement.getLine().getLineOfCode(), ofgElement, javaFile, projectFile);
                             }
                         }
@@ -115,7 +120,7 @@ public class ProjectReader {
     public void objectMethodInvocationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line objectMethodInvocationLine: linesContainer.getObjectMethodInvocationLines()){
             if(objectMethodInvocationLine.getIndex() > methodLine.getIndex() && objectMethodInvocationLine.getIndex() < nextMethodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, objectMethodInvocationLine, false, file)); //Definimos el elemento del ofg y lo añadimos al elemento root.
+                assignChild(ofgRoot, linesContainer, objectMethodInvocationLine, false, file);
             }
         }
     }
@@ -130,7 +135,7 @@ public class ProjectReader {
     public void methodInvocationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line methodInvocationLine: linesContainer.getMethodInvocationLines()){ //Buscamos entre todas las invocaciones de methodos.
             if(methodInvocationLine.getIndex() > methodLine.getIndex() && methodInvocationLine.getIndex() < nextMethodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, methodInvocationLine, false, file));
+                assignChild(ofgRoot, linesContainer, methodInvocationLine, false, file);
             }
         }
     }
@@ -145,7 +150,7 @@ public class ProjectReader {
     public void objectInstantiationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line objectInstantiationLine: linesContainer.getObjectInstantiationLines()){
             if(objectInstantiationLine.getIndex() > methodLine.getIndex() && objectInstantiationLine.getIndex() < nextMethodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, objectInstantiationLine, false, file));
+                assignChild(ofgRoot, linesContainer, objectInstantiationLine, false, file);
             }
         }
     }
@@ -160,7 +165,7 @@ public class ProjectReader {
     public void objectVariableAssignationsBetweenMethods(LinesContainer linesContainer, Line methodLine, Line nextMethodLine, OFGelement ofgRoot, File file){
         for(Line ObjectVariableAssignationLine: linesContainer.getObjectVariableAssignationLines()){
             if(ObjectVariableAssignationLine.getIndex() > methodLine.getIndex() && ObjectVariableAssignationLine.getIndex() < nextMethodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, ObjectVariableAssignationLine, false, file));
+                assignChild(ofgRoot, linesContainer, ObjectVariableAssignationLine, false, file);
             }
         }
     }
@@ -188,7 +193,7 @@ public class ProjectReader {
     public void objectMethodInvocationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line objectMethodInvocationLine: linesContainer.getObjectMethodInvocationLines()){
             if(objectMethodInvocationLine.getIndex() > methodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, objectMethodInvocationLine, false, file));
+                assignChild(ofgRoot, linesContainer, objectMethodInvocationLine, false, file);
             }
         }
     }
@@ -202,7 +207,7 @@ public class ProjectReader {
     public void methodInvocationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line methodInvocationLine: linesContainer.getMethodInvocationLines()){
             if(methodInvocationLine.getIndex() > methodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, methodInvocationLine, false, file));
+                assignChild(ofgRoot, linesContainer, methodInvocationLine, false, file);
             }
         }
     }
@@ -216,7 +221,7 @@ public class ProjectReader {
     public void objectInstantiationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line objectInstantiationLine: linesContainer.getObjectInstantiationLines()){
             if(objectInstantiationLine.getIndex() > methodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, objectInstantiationLine, false, file));
+                assignChild(ofgRoot, linesContainer, objectInstantiationLine, false, file);
             }
         }
     }
@@ -230,8 +235,41 @@ public class ProjectReader {
     public void objectVariableAssignationAfterLastMethod(OFGelement ofgRoot, LinesContainer linesContainer, Line methodLine, File file){
         for(Line ObjectVariableAssignationLine: linesContainer.getObjectVariableAssignationLines()){
             if(ObjectVariableAssignationLine.getIndex() > methodLine.getIndex()){
-                ofgRoot.getChildren().add(OFGconverter.defineTypeOfOFGElement(linesContainer, ObjectVariableAssignationLine, false, file));
+                assignChild(ofgRoot, linesContainer, ObjectVariableAssignationLine, false, file);
             }
+        }
+    }
+    
+    /**
+     * This method takes two ofgelements and validates than 
+     * @param ofgRoot
+     * @param ofgElement
+     * @return 
+     */
+    public boolean validateDuplicity(OFGelement ofgRoot, OFGelement ofgElement){
+        boolean validate = false;
+        if(!ofgRoot.getChildren().isEmpty()){
+            for(OFGelement rootChildren: ofgRoot.getChildren()){
+                if(rootChildren.getLine().getLineOfCode().equals(ofgElement.getLine().getLineOfCode()) && rootChildren.getMethodName().equals(ofgElement.getMethodName()) && rootChildren.getClassName().equals(ofgElement.getClassName()) && rootChildren.getPackageName().equals(ofgElement.getPackageName())){
+                    validate = true;
+                }
+            }
+        }
+        return validate;
+    }
+    
+    /**
+     * This method assigns the child ofgElement to the root ofgElement after confirming it's not duplicated.
+     * @param ofgRoot
+     * @param linesContainer
+     * @param line
+     * @param rootNode
+     * @param file
+     */
+    public void assignChild(OFGelement ofgRoot,LinesContainer linesContainer, Line line, boolean rootNode, File file){
+        OFGelement rootChild = OFGconverter.defineTypeOfOFGElement(linesContainer, line, false, file);
+        if(!validateDuplicity(ofgRoot, rootChild)){
+            ofgRoot.getChildren().add(rootChild);
         }
     }
     
@@ -248,7 +286,13 @@ public class ProjectReader {
     public boolean findChildrensInJavaFile(LinesContainer linesContainer, String objectMethodInvocation, OFGelement ofgRoot, File lastFileSelected, File projectFile) throws IOException{
         boolean flag = false;
         boolean childrenFound = false;
-        String methodRootName = OFGconverter.findPattern(objectMethodInvocation,OBJECT_METHOD_INVOCATION, 2);
+        String methodRootName = OFGconverter.findPattern(objectMethodInvocation,OBJECT_METHOD_INVOCATION, 3);
+//        ArrayList<OFGelement> initialChildrens = new ArrayList<OFGelement>();
+//        if(!ofgRoot.getChildren().isEmpty()){
+//            for (OFGelement ofgElement : ofgRoot.getChildren()) {
+//                initialChildrens.add(ofgElement);
+//            }
+//        }
         for(int i = 0; i < linesContainer.getMethodsLines().size(); i++){ //Buscamos todas las lineas de metodos de la clase.
             Line methodLine = linesContainer.getMethodsLines().get(i);
             String methodName = OFGconverter.findPattern(methodLine.getLineOfCode(),METHOD_DECLARATION, 3); //Sacamos el nombre del metodo que estamos comparando.
@@ -265,7 +309,7 @@ public class ProjectReader {
                     String iteratorLineOfCode = ofgElementIterator.getLine().getLineOfCode();
                     String iteratorTypeOfLine = ofgElementIterator.getLine().getType();
                     String iteratorMethodName = ofgElementIterator.getMethodName();
-                    String pattern = OFGconverter.findPattern(iteratorLineOfCode,OBJECT_METHOD_INVOCATION, 2);
+                    String pattern = OFGconverter.findPattern(iteratorLineOfCode,OBJECT_METHOD_INVOCATION, 3);
                     if(objectMethodInvocation.equals(iteratorLineOfCode)){
                         iterator.remove();
                     } else if(pattern != null && "objectMethodInvocation".equals(iteratorTypeOfLine)){
@@ -281,7 +325,9 @@ public class ProjectReader {
         if(!ofgRoot.getChildren().isEmpty() && childrenFound){
             flag = true;
             for(OFGelement ofgElement: ofgRoot.getChildren()){
-                createOfg(ofgElement, linesContainer, lastFileSelected, projectFile, ofgElement.getPackageName());
+                if("objectMethodInvocation".equals(ofgElement.getLine().getType())){
+                    createOfg(ofgElement, linesContainer, lastFileSelected, projectFile, ofgElement.getPackageName());
+                }
             }
         }
         return flag;
@@ -339,7 +385,6 @@ public class ProjectReader {
      * @throws FileNotFoundException 
      */
     private JavaFileAnalized readJavaFile(File file) throws FileNotFoundException {
-//        System.out.println(file.getAbsolutePath());
         Line line;
         ArrayList<Line> lines;
         JavaFileAnalized javaFileAnalized = new JavaFileAnalized();

@@ -74,27 +74,15 @@ public class ConstantsManager {
     public static final String ARRAYTYPE = IDENTIFIER+"<"+IDENTIFIER+">";
     public static final String TYPE = "("+IDENTIFIER+"|"+CLASSINTOCLASS+"|"+ARRAYTYPE+")";
     public static final String CONSTRUCTOR_PARAMETER = "\\s*+"+ NEW + "\\s++"+ IDENTIFIER+"\\s*+"+LPAREN+"(\\s*+"+PARAMETER+"(\\s*+"+COMMA+"\\s*+"+PARAMETER+"\\s*+)*+)*+"+RPAREN ;
-//    public static final String METHOD_CALL = IDENTIFIER+LPAREN+RPAREN;
-//    public static final String SIMPLE_OBJECT_METHOD_INVOCATION = IDENTIFIER+"("+DOT+IDENTIFIER+")"+LPAREN+"(\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+"|"+METHOD_CALL+")"+"(\\s*+"+COMMA+"\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+"|"+METHOD_CALL+")"+"\\s*+)?)?"+RPAREN;
+    public static final String METHOD_CALL = IDENTIFIER+LPAREN+RPAREN;
+    public static final String SIMPLE_OBJECT_METHOD_INVOCATION = IDENTIFIER+"("+DOT+IDENTIFIER+")"+LPAREN+"(\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+"|"+METHOD_CALL+")"+"(\\s*+"+COMMA+"\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+"|"+METHOD_CALL+")"+"\\s*+)?)?"+RPAREN;
     
     public static final String PACKAGE_DECLARATION = "\\s*+"+PACKAGE+"\\s*+("+IDENTIFIER+"("+DOT+IDENTIFIER+")*?)"+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING;
     public static final String CLASS_DECLARATION = "\\s*+"+ACCESS_MODIFIER+"\\s++("+ABSTRACT+"\\s++)?"+CLASS+"\\s++"+TYPE+"(\\s++("+EXTENDS+"|"+IMPLEMENTS+")?\\s++"+TYPE+"(\\s*+"+COMMA+"\\s*+"+TYPE+"\\s*+)*+)?"+"\\s*+"+"("+LBRACE+")?"+"\\s*+"+LINE_ENDING;
     public static final String METHOD_DECLARATION = "\\s*+"+ACCESS_MODIFIER+"\\s++("+STATIC+"\\s++)?"+IDENTIFIER+"\\s++"+"("+IDENTIFIER+")"+"\\s*+"+LPAREN+"\\s*+("+TYPE+"\\s++"+IDENTIFIER+"(\\s*+"+COMMA+"\\s*+"+TYPE+"\\s++"+IDENTIFIER+"\\s*+)*?)*?"+RPAREN+"\\s*+("+LBRACE+")?\\s*+"+LINE_ENDING;
     public static final String OBJECT_INSTANTIATION= "\\s*+"+IDENTIFIER+"\\s++"+IDENTIFIER+"\\s*+"+EQUAL+"\\s*+"+NEW+"\\s++"+IDENTIFIER+"\\s*+"+LPAREN+"\\s*+("+PARAMETER+"(\\s*+"+COMMA+"\\s*+"+PARAMETER+"\\s*+)*+)*+"+RPAREN+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING;
-    public static final String OBJECT_VARIABLE_ASSIGNATION = "\\s*+"+IDENTIFIER+"\\s*+"+EQUAL+"\\s*+"+PARAMETER+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING;
-    
-    
-    
-    
-                                                                                                                                                                                                                                         //Aqui esta el cambio significativo.                                   
-    public static final String OBJECT_METHOD_INVOCATION = "\\s*+"+IDENTIFIER+"("+DOT+"("+IDENTIFIER+")"+")"+LPAREN+"(\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+")"+"(\\s*+"+COMMA+"\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+")"+"\\s*+)?)?"+RPAREN+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING;
-    
-    
-    
-    
-    
-    
-    
+    public static final String OBJECT_VARIABLE_ASSIGNATION = "^(\\s*+"+IDENTIFIER+"\\s*+"+EQUAL+"\\s*+"+PARAMETER+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING+")$";                                                                                                                                                                                                                                                                
+    public static final String OBJECT_METHOD_INVOCATION = "^(\\s*+"+IDENTIFIER+"("+DOT+"("+IDENTIFIER+")"+")"+LPAREN+"(\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+METHOD_CALL+SIMPLE_OBJECT_METHOD_INVOCATION+")"+"(\\s*+"+COMMA+"\\s*+"+"("+PARAMETER+"|"+CONSTRUCTOR_PARAMETER+METHOD_CALL+SIMPLE_OBJECT_METHOD_INVOCATION+")"+"\\s*+)?)?"+RPAREN+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING+")$";
     public static final String OBJECT_METHOD_INVOCATION_LISTENER = "\\s*+"+IDENTIFIER+"("+DOT+IDENTIFIER+")"+LPAREN+"\\s*+"+CONSTRUCTOR_PARAMETER+"\\s*+"+LBRACE+"\\s*+"+LINE_ENDING;
     public static final String METHOD_INVOCATION = "\\s*+"+IDENTIFIER+LPAREN+"(\\s*+"+PARAMETER+"\\s*+("+COMMA+"\\s*+"+PARAMETER+"\\s*+)*+)*+"+RPAREN+"\\s*+"+SEMICOLON+"\\s*+"+LINE_ENDING;
     

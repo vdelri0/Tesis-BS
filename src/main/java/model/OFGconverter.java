@@ -49,6 +49,7 @@ public class OFGconverter {
      * @param linesContainer
      * @param line
      * @param rootNode 
+     * @param file 
      * @return 
      */
     public static OFGelement defineTypeOfOFGElement(LinesContainer linesContainer, Line line, boolean rootNode, File file){
@@ -57,6 +58,7 @@ public class OFGconverter {
             ofgElement = defineMethodInvocationElement(linesContainer, line, rootNode, ofgElement, file);
             ofgElement = defineObjectInstantiationElement(linesContainer, line, rootNode, ofgElement, file);
             ofgElement = defineObjectVariableAssignationsElement(linesContainer, line, rootNode, ofgElement, file);
+            
         return ofgElement;
     }
     
@@ -171,22 +173,11 @@ public class OFGconverter {
      */
     public static String findPattern(String lineOfCode, String regex, int groupIndex){
         String found = "";
-//        try {
-//            if("    public int size() {\r".equals(lineOfCode)){
-//                System.err.println("We are in modafoca");
-//            }
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(lineOfCode);
             if (matcher.find()){
                 found = matcher.group(groupIndex);
             }
-//        } catch (StackOverflowError e) {
-//            System.out.println(lineOfCode);
-//            System.out.println(regex);
-//            System.out.println(groupIndex);
-//            System.err.println("--------------------------------------------Nivel de recursion reportado: " + e.getStackTrace().length);
-//        }
-            
         return found;
     }
 }

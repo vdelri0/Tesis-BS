@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?><!--comentario--><OfgElement>
-		<Line>        mb.add(m);</Line>
+		<Line>        middleMan.recruitPerson();</Line>
 		<TypeOfLine>objectMethodInvocation</TypeOfLine>
-		<Package>org.jhotdraw.app</Package>
-		<Class>DefaultMDIApplication</Class>
-		<Method>null</Method>
+		<Package>A</Package>
+		<Class>Politician</Class>
+		<Method>recruit</Method>
 		<Children>
+						<OfgElement>
+								<Line>        person.setFirstName(firstName);</Line>
+								<TypeOfLine>objectMethodInvocation</TypeOfLine>
+								<Package>A</Package>
+								<Class>MiddleMan</Class>
+								<Method>recruitPerson</Method>
+								<Children>
+								</Children>
+						</OfgElement>
+						<OfgElement>
+								<Line>        person.setLastName(lastName);</Line>
+								<TypeOfLine>objectMethodInvocation</TypeOfLine>
+								<Package>A</Package>
+								<Class>MiddleMan</Class>
+								<Method>recruitPerson</Method>
+								<Children>
+								</Children>
+						</OfgElement>
+						<OfgElement>
+								<Line>        person.setAge(age);</Line>
+								<TypeOfLine>objectMethodInvocation</TypeOfLine>
+								<Package>A</Package>
+								<Class>MiddleMan</Class>
+								<Method>recruitPerson</Method>
+								<Children>
+								</Children>
+						</OfgElement>
+						<OfgElement>
+								<Line>        Person person = new Person();</Line>
+								<TypeOfLine>objectInstantiation</TypeOfLine>
+								<Package>A</Package>
+								<Class>MiddleMan</Class>
+								<Method>recruitPerson</Method>
+								<Children>
+								</Children>
+						</OfgElement>
 		</Children>
 	</OfgElement>
